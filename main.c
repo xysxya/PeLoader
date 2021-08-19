@@ -2,12 +2,13 @@
 #include <windows.h>
 #include <fileapi.h>
 #include <winnt.h>
+#include <minwindef.h>
 
 //set Entry
 BOOL CallEntry (char* chBaseAddress) {
     PIMAGE_DOS_HEADER pDos = (PIMAGE_DOS_HEADER)chBaseAddress;
     PIMAGE_NT_HEADERS pNt = (PIMAGE_NT_HEADERS)(chBaseAddress + pDos->e_lfanew);
-    char *ExeEntry = (char*)(chbaseAddress + pNt->OptionalHeader.AddressOfEntryPoint);
+    char *ExeEntry = (char*)(chBaseAddress + pNt->OptionalHeader.AddressOfEntryPoint);
     __asm {
         mov eax, ExeEntry
         jmp eax
@@ -44,8 +45,8 @@ BOOL ImportTable(char* chBaseAddress) {
 
         lpDllName = (char*)((DWORD)pDos + pImportTable->Name);
         hDll = GetModuleHandleA((lpDllName));
-        if (NULL == hDLL) {
-            hdll = LoadLibraryA(lpDllName);
+        if (NULL == hDll) {
+            hDll = LoadLibraryA(lpDllName);
             if (NULL == hDll) {
                 pImportTable++;
                 continue;
@@ -77,6 +78,23 @@ BOOL ImportTable(char* chBaseAddress) {
     return TRUE;
 
 }
+
+BOOL ReLocationTable (char* chBaseAddress) {
+    PIMAGE_DOS_HEADER pDos = (PIMAGE_DOS_HEADER)chBaseAddress;
+    PIMAGE_NT_HEADERS  pNt = (PIMAGE_NT_HEADERS)(chBaseAddress + pDos->e_lfanew);
+    PIMAGE_BASE_RELOCATION pLoc = (PIMAGE_BASE_RELOCATION)(chBaseAddress +
+            pNt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
+
+    if ((char*)pLoc == (char*)pDos) {
+        return TRUE;
+    }
+
+    while ((pLoc->VirtualAddress + pLoc->SizeOfBlock) != 0) {
+        WORD *pLocData = (WORD *)((PBYTE)pLoc + sizeof(IMAGE_BASE_RELOCATION));
+        int nNumberOfReloc =
+    }
+}
+
 int main() {
     char szFilename[] = ".\\1.exe";
     HANDLE hFile = CreateFileA(

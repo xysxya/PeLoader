@@ -91,7 +91,7 @@ BOOL ReLocationTable (char* chBaseAddress) {
 
     while ((pLoc->VirtualAddress + pLoc->SizeOfBlock) != 0) {
         WORD *pLocData = (WORD *)((PBYTE)pLoc + sizeof(IMAGE_BASE_RELOCATION));
-        int nNumberOfReloc =
+        int nNumberOfReloc ;
     }
 }
 
